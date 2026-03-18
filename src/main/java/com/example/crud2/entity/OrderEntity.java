@@ -29,7 +29,7 @@ public class OrderEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private UserEntity user;  // Поле для связи
+    private ClientEntity user;
 
     @PrePersist
     protected void onCreate() {

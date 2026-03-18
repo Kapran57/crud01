@@ -34,9 +34,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
+    @ExceptionHandler(ClientNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFound(
-            UserNotFoundException ex, WebRequest request) {
+            ClientNotFoundException ex, WebRequest request) {
 
         ErrorResponse error = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -130,9 +130,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(UserDeletionException.class)
+    @ExceptionHandler(ClientDeletionException.class)
     public ResponseEntity<ErrorResponse> handleUserDeletion(
-            UserDeletionException ex, WebRequest request) {
+            ClientDeletionException ex, WebRequest request) {
 
         ErrorResponse error = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
