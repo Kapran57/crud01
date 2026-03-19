@@ -28,7 +28,7 @@ public class OrderEntity {
     private OrderStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "id")
     private UserEntity user;
 
     @PrePersist
