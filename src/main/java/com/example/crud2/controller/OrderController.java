@@ -63,13 +63,13 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<Page<OrderDto>> getOrdersByUserId(
-            @PathVariable Long userId,
+    @GetMapping("/client/{clientId}")
+    public ResponseEntity<Page<OrderDto>> getOrdersByClientId(
+            @PathVariable Long clientId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<OrderDto> orders = orderService.getOrdersByUserId(userId, page, size);
+        Page<OrderDto> orders = orderService.getOrdersByClientId(clientId, page, size);
         return ResponseEntity.ok(orders);
     }
 }

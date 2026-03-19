@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
-    Page<OrderEntity> findByUserId(Long userId, Pageable pageable);
+    Page<OrderEntity> findByClientId(Long clientId, Pageable pageable);
 
     @Query("SELECT o FROM OrderEntity o WHERE " +
             "(:status IS NULL OR o.status = :status) AND " +

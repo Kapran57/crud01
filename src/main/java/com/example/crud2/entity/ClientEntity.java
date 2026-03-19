@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserEntity {
+public class ClientEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,18 +32,18 @@ public class UserEntity {
     @Column(length = 20)
     private String phone;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderEntity> orders = new ArrayList<>();
 
     public void addOrder(OrderEntity order) {
         orders.add(order);
-        order.setUser(this);
+        order.setClient(this);
     }
 
     public void removeOrder(OrderEntity order) {
         orders.remove(order);
-        order.setUser(null);
+        order.setClient(null);
     }
 
 

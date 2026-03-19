@@ -28,8 +28,8 @@ public class OrderEntity {
     private OrderStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id")
-    private UserEntity user;
+    @JoinColumn(name = "client_id")
+    private ClientEntity client;
 
     @PrePersist
     protected void onCreate() {

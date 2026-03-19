@@ -1,13 +1,13 @@
 package com.example.crud2.service;
 
 import com.example.crud2.dto.OrderDto;
-import com.example.crud2.dto.UserDto;
+import com.example.crud2.dto.ClientDto;
 import com.example.crud2.entity.OrderEntity;
 import com.example.crud2.entity.OrderStatus;
-import com.example.crud2.entity.UserEntity;
+import com.example.crud2.entity.ClientEntity;
 import com.example.crud2.exception.*;
 import com.example.crud2.repository.OrderRepository;
-import com.example.crud2.repository.UserRepository;
+import com.example.crud2.repository.ClientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
+    private final ClientRepository clientRepository;
 
     private OrderDto convertToDto(OrderEntity entity) {
         if (entity == null) {
@@ -35,15 +35,15 @@ public class OrderService {
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setStatus(entity.getStatus());
 
-        if (entity.getUser() != null) {
-            dto.setUserId(entity.getUser().getId());
+        if (entity.getClient() != null) {
+            dto.setClientId(entity.getClient().getId());
 
-            UserDto userDto = new UserDto();
-            userDto.setId(entity.getUser().getId());
-            userDto.setFirstName(entity.getUser().getFirstName());
-            userDto.setLastName(entity.getUser().getLastName());
-            userDto.setEmail(entity.getUser().getEmail());
-            dto.setUser(userDto);
+            ClientDto clientDto = new ClientDto();
+            clientDto.setId(entity.getClient().getId());
+            clientDto.setFirstName(entity.getClient().getFirstName());
+            clientDto.setLastName(entity.getClient().getLastName());
+            clientDto.setEmail(entity.getClient().getEmail());
+            dto.setClient(clientDto);
         }
 
         return dto;
@@ -51,17 +51,17 @@ public class OrderService {
 
     @Transactional
     public OrderDto createOrder(OrderDto orderDto) {
-        UserEntity user = userRepository.findById(orderDto.getUserId())
-                .orElseThrow(() -> new UserNotFoundException(orderDto.getUserId()));
+        ClientEntity сlient = clientRepository.findById(orderDto.getClientId())
+                .orElseThrow(() -> new ClientNotFoundException(orderDto.getClientId()));
 
         OrderEntity entity = new OrderEntity();
         entity.setStatus(orderDto.getStatus());
-        entity.setUser(user);
+        entity.setClient(сlient);
 
         OrderEntity savedEntity = orderRepository.save(entity);
 
         OrderDto resultDto = convertToDto(savedEntity);
-        resultDto.setUserId(user.getId());
+        resultDto.setClientId(сlient.getId());
 
         return resultDto;
     }
@@ -108,7 +108,7 @@ public class OrderService {
             String sortDirection) {
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);  // ← pageable создается правильно
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<OrderEntity> ordersPage = orderRepository.findByFilters(status, startDate, endDate, pageable);
 
@@ -116,18 +116,18 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderDto> getOrdersByUserId(Long userId, int page, int size) {
-        if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundException(userId);
+    public Page<OrderDto> getOrdersByClientId(Long сlientId, int page, int size) {
+        if (!clientRepository.existsById(сlientId)) {
+            throw new ClientNotFoundException(сlientId);
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        Page<OrderEntity> ordersPage = orderRepository.findByUserId(userId, pageable);
+        Page<OrderEntity> ordersPage = orderRepository.findByClientId(сlientId, pageable);
 
         return ordersPage.map(order -> {
             OrderDto dto = convertToDto(order);
-            dto.setUserId(userId);
+            dto.setClientId(сlientId);
             return dto;
         });
     }

@@ -1,7 +1,7 @@
 package com.example.crud2.controller;
 
-import com.example.crud2.dto.UserDto;
-import com.example.crud2.service.UserService;
+import com.example.crud2.dto.ClientDto;
+import com.example.crud2.service.ClientService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -10,40 +10,40 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/clients")
 @RequiredArgsConstructor
-public class UserController {
+public class ClientController {
 
-    private final UserService userService;
+    private final ClientService clientService;
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
-        UserDto createdUser = userService.createUser(userDto);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    public ResponseEntity<ClientDto> createClient(@Valid @RequestBody ClientDto clientDto) {
+        ClientDto createdClient = clientService.createClient(clientDto);
+        return new ResponseEntity<>(createdClient, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
-        UserDto user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<ClientDto> getClientById(@PathVariable Long id) {
+        ClientDto client = clientService.getClientById(id);
+        return ResponseEntity.ok(client);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(
+    public ResponseEntity<ClientDto> updateClient(
             @PathVariable Long id,
-            @Valid @RequestBody UserDto userDto) {
-        UserDto updatedUser = userService.updateUser(id, userDto);
-        return ResponseEntity.ok(updatedUser);
+            @Valid @RequestBody ClientDto clientDto) {
+        ClientDto updatedClient = clientService.updateClient(id, clientDto);
+        return ResponseEntity.ok(updatedClient);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
+        clientService.deleteClient(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<Page<UserDto>> getAllUsers(
+    public ResponseEntity<Page<ClientDto>> getAllClients(
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
             @RequestParam(required = false) String email,
@@ -53,8 +53,8 @@ public class UserController {
             @RequestParam(defaultValue = "firstName") String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDirection) {
 
-        Page<UserDto> users = userService.getAllUsers(
+        Page<ClientDto> clients = clientService.getAllClients(
                 firstName, lastName, email, phone, page, size, sortBy, sortDirection);
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(clients);
     }
 }

@@ -1,12 +1,12 @@
 package com.example.crud2.exception;
 
-public class UserNotFoundException extends RuntimeException {
+public class ClientNotFoundException extends RuntimeException {
 
-    public UserNotFoundException(Long id) {
+    public ClientNotFoundException(Long id) {
         super(String.format("Пользователь с id %d не найден", id));
     }
 
-    public UserNotFoundException(String email) {
+    public ClientNotFoundException(String email) {
         super(String.format("Пользователь с email %s не найден", email));
     }
 }
