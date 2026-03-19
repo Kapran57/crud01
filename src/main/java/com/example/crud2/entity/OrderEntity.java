@@ -29,7 +29,7 @@ public class OrderEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private ClientEntity user;
+    private UserEntity user;
 
     @PrePersist
     protected void onCreate() {

@@ -18,6 +18,6 @@ public class OrderDto {
     @NotNull(message = "Статус обязателен для заполнения")
     private OrderStatus status;
 
-    private ClientDto user;
+    private UserDto user;
     private Long userId;
 }

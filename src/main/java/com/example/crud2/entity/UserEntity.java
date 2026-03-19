@@ -34,7 +34,7 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<OrderEntity> orders = new ArrayList<>();  // ← Это список заказов, а не один заказ!
+    private List<OrderEntity> orders = new ArrayList<>();
 
     public void addOrder(OrderEntity order) {
         orders.add(order);
@@ -45,4 +45,6 @@ public class UserEntity {
         orders.remove(order);
         order.setUser(null);
     }
+
+
 }

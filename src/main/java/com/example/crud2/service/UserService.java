@@ -85,23 +85,18 @@ public class UserService {
         return convertToDto(updatedEntity);
     }
 
-    // ========== 4. deleteUser - УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЯ ==========
     @Transactional
     public void deleteUser(Long id) {
-        // Проверяем, существует ли пользователь
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        // Проверяем, есть ли у пользователя заказы
         if (user.getOrders() != null && !user.getOrders().isEmpty()) {
             throw new UserDeletionException(id, user.getOrders().size());
         }
 
-        // Удаляем пользователя
         userRepository.deleteById(id);
     }
 
-    // ========== 5. getAllUsers - ПОЛУЧЕНИЕ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ С ФИЛЬТРАЦИЕЙ ==========
     @Transactional(readOnly = true)
     public Page<UserDto> getAllUsers(
             String firstName,
@@ -113,31 +108,25 @@ public class UserService {
             String sortBy,
             String sortDirection) {
 
-        // Создаем объект-пример для фильтрации
         UserEntity exampleUser = new UserEntity();
         exampleUser.setFirstName(firstName);
         exampleUser.setLastName(lastName);
         exampleUser.setEmail(email);
         exampleUser.setPhone(phone);
 
-        // Настройка матчера
         ExampleMatcher matcher = ExampleMatcher.matchingAll()
-                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)  // LIKE %...%
-                .withIgnoreCase()                                            // регистронезависимо
-                .withIgnoreNullValues();                                    // игнорируем null
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
+                .withIgnoreCase()
+                .withIgnoreNullValues();
 
         Example<UserEntity> example = Example.of(exampleUser, matcher);
 
-        // Сортировка
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
 
-        // Пагинация
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        // Запрос в БД
         Page<UserEntity> usersPage = userRepository.findAll(example, pageable);
 
-        // Конвертация каждой Entity в DTO и возврат
         return usersPage.map(this::convertToDto);
     }
 }

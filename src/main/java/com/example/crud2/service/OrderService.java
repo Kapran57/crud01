@@ -1,13 +1,13 @@
 package com.example.crud2.service;
 
 import com.example.crud2.dto.OrderDto;
-import com.example.crud2.dto.ClientDto;
+import com.example.crud2.dto.UserDto;
 import com.example.crud2.entity.OrderEntity;
 import com.example.crud2.entity.OrderStatus;
-import com.example.crud2.entity.ClientEntity;
+import com.example.crud2.entity.UserEntity;
 import com.example.crud2.exception.*;
 import com.example.crud2.repository.OrderRepository;
-import com.example.crud2.repository.ClientRepository;
+import com.example.crud2.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
 
     private OrderDto convertToDto(OrderEntity entity) {
         if (entity == null) {
@@ -37,6 +38,12 @@ public class OrderService {
         if (entity.getUser() != null) {
             dto.setUserId(entity.getUser().getId());
 
+            UserDto userDto = new UserDto();
+            userDto.setId(entity.getUser().getId());
+            userDto.setFirstName(entity.getUser().getFirstName());
+            userDto.setLastName(entity.getUser().getLastName());
+            userDto.setEmail(entity.getUser().getEmail());
+            dto.setUser(userDto);
         }
 
         return dto;
@@ -44,6 +51,8 @@ public class OrderService {
 
     @Transactional
     public OrderDto createOrder(OrderDto orderDto) {
+        UserEntity user = userRepository.findById(orderDto.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(orderDto.getUserId()));
 
         OrderEntity entity = new OrderEntity();
         entity.setStatus(orderDto.getStatus());
@@ -108,6 +117,8 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public Page<OrderDto> getOrdersByUserId(Long userId, int page, int size) {
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException(userId);
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
