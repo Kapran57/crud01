@@ -1,7 +1,7 @@
 package com.example.crud2.service;
 
 import com.example.crud2.dto.OrderDto;
-import com.example.crud2.dto.ClientDto;
+import com.example.crud2.dto.mapper.OrderMapper;
 import com.example.crud2.entity.OrderEntity;
 import com.example.crud2.entity.OrderStatus;
 import com.example.crud2.entity.ClientEntity;
@@ -24,44 +24,21 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ClientRepository clientRepository;
-
-    private OrderDto convertToDto(OrderEntity entity) {
-        if (entity == null) {
-            return null;
-        }
-
-        OrderDto dto = new OrderDto();
-        dto.setId(entity.getId());
-        dto.setCreatedAt(entity.getCreatedAt());
-        dto.setStatus(entity.getStatus());
-
-        if (entity.getClient() != null) {
-            dto.setClientId(entity.getClient().getId());
-
-            ClientDto clientDto = new ClientDto();
-            clientDto.setId(entity.getClient().getId());
-            clientDto.setFirstName(entity.getClient().getFirstName());
-            clientDto.setLastName(entity.getClient().getLastName());
-            clientDto.setEmail(entity.getClient().getEmail());
-            dto.setClient(clientDto);
-        }
-
-        return dto;
-    }
+    private final OrderMapper orderMapper;
 
     @Transactional
     public OrderDto createOrder(OrderDto orderDto) {
-        ClientEntity сlient = clientRepository.findById(orderDto.getClientId())
+        ClientEntity client = clientRepository.findById(orderDto.getClientId())
                 .orElseThrow(() -> new ClientNotFoundException(orderDto.getClientId()));
 
-        OrderEntity entity = new OrderEntity();
-        entity.setStatus(orderDto.getStatus());
-        entity.setClient(сlient);
+        OrderEntity entity = orderMapper.toEntity(orderDto);
+
+        entity.setClient(client);
 
         OrderEntity savedEntity = orderRepository.save(entity);
 
-        OrderDto resultDto = convertToDto(savedEntity);
-        resultDto.setClientId(сlient.getId());
+        OrderDto resultDto = orderMapper.toDto(savedEntity);
+        resultDto.setClientId(client.getId());
 
         return resultDto;
     }
@@ -71,7 +48,7 @@ public class OrderService {
         OrderEntity entity = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
-        return convertToDto(entity);
+        return orderMapper.toDto(entity);
     }
 
     @Transactional
@@ -86,7 +63,7 @@ public class OrderService {
         entity.setStatus(status);
         OrderEntity updatedEntity = orderRepository.save(entity);
 
-        return convertToDto(updatedEntity);
+        return orderMapper.toDto(updatedEntity);
     }
 
     @Transactional
@@ -112,22 +89,22 @@ public class OrderService {
 
         Page<OrderEntity> ordersPage = orderRepository.findByFilters(status, startDate, endDate, pageable);
 
-        return ordersPage.map(this::convertToDto);
+        return ordersPage.map(orderMapper::toDto);
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderDto> getOrdersByClientId(Long сlientId, int page, int size) {
-        if (!clientRepository.existsById(сlientId)) {
-            throw new ClientNotFoundException(сlientId);
+    public Page<OrderDto> getOrdersByClientId(Long clientId, int page, int size) {
+        if (!clientRepository.existsById(clientId)) {
+            throw new ClientNotFoundException(clientId);
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        Page<OrderEntity> ordersPage = orderRepository.findByClientId(сlientId, pageable);
+        Page<OrderEntity> ordersPage = orderRepository.findByClientId(clientId, pageable);
 
         return ordersPage.map(order -> {
-            OrderDto dto = convertToDto(order);
-            dto.setClientId(сlientId);
+            OrderDto dto = orderMapper.toDto(order);
+            dto.setClientId(clientId);
             return dto;
         });
     }

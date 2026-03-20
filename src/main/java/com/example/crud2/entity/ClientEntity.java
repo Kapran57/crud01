@@ -35,7 +35,6 @@ public class ClientEntity {
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderEntity> orders = new ArrayList<>();
-
     public void addOrder(OrderEntity order) {
         orders.add(order);
         order.setClient(this);
@@ -45,6 +44,4 @@ public class ClientEntity {
         orders.remove(order);
         order.setClient(null);
     }
-
-
 }

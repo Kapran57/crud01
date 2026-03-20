@@ -1,6 +1,7 @@
 package com.example.crud2.service;
 
 import com.example.crud2.dto.ClientDto;
+import com.example.crud2.dto.mapper.ClientMapper;
 import com.example.crud2.entity.ClientEntity;
 import com.example.crud2.exception.*;
 import com.example.crud2.repository.ClientRepository;
@@ -14,35 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClientService {
 
     private final ClientRepository clientRepository;
-
-    private ClientDto convertToDto(ClientEntity entity) {
-        if (entity == null) {
-            return null;
-        }
-
-        ClientDto dto = new ClientDto();
-        dto.setId(entity.getId());
-        dto.setFirstName(entity.getFirstName());
-        dto.setLastName(entity.getLastName());
-        dto.setEmail(entity.getEmail());
-        dto.setPhone(entity.getPhone());
-
-        return dto;
-    }
-
-    private ClientEntity convertToEntity(ClientDto dto) {
-        if (dto == null) {
-            return null;
-        }
-
-        ClientEntity entity = new ClientEntity();
-        entity.setFirstName(dto.getFirstName());
-        entity.setLastName(dto.getLastName());
-        entity.setEmail(dto.getEmail());
-        entity.setPhone(dto.getPhone());
-
-        return entity;
-    }
+    private final ClientMapper clientMapper;
 
     @Transactional
     public ClientDto createClient(ClientDto clientDto) {
@@ -50,11 +23,11 @@ public class ClientService {
             throw new DuplicateEmailException(clientDto.getEmail());
         }
 
-        ClientEntity entity = convertToEntity(clientDto);
+        ClientEntity entity = clientMapper.toEntity(clientDto);
 
         ClientEntity savedEntity = clientRepository.save(entity);
 
-        return convertToDto(savedEntity);
+        return clientMapper.toDto(savedEntity);
     }
 
     @Transactional(readOnly = true)
@@ -62,7 +35,7 @@ public class ClientService {
         ClientEntity entity = clientRepository.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException(id));
 
-        return convertToDto(entity);
+        return clientMapper.toDto(entity);
     }
 
     @Transactional
@@ -75,14 +48,11 @@ public class ClientService {
             throw new DuplicateEmailException(clientDto.getEmail());
         }
 
-        entity.setFirstName(clientDto.getFirstName());
-        entity.setLastName(clientDto.getLastName());
-        entity.setEmail(clientDto.getEmail());
-        entity.setPhone(clientDto.getPhone());
+        clientMapper.updateEntity(entity, clientDto);
 
         ClientEntity updatedEntity = clientRepository.save(entity);
 
-        return convertToDto(updatedEntity);
+        return clientMapper.toDto(updatedEntity);
     }
 
     @Transactional
@@ -127,6 +97,6 @@ public class ClientService {
 
         Page<ClientEntity> clientsPage = clientRepository.findAll(example, pageable);
 
-        return clientsPage.map(this::convertToDto);
+        return clientsPage.map(clientMapper::toDto);
     }
 }

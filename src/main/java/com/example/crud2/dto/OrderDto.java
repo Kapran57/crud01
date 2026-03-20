@@ -15,7 +15,7 @@ public class OrderDto {
     private Long id;
     private LocalDateTime createdAt;
 
-    @NotNull(message = "Статус обязателен для заполнения")
+    @NotNull(message = "Статус обязателен")
     private OrderStatus status;
 
     private ClientDto client;

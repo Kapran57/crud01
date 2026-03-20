@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,17 +18,18 @@ public class ClientDto {
 
     private Long id;
 
-    @NotBlank(message = "Имя обязательно для заполнения")
+    @NotBlank(message = "Имя обязательно")
     private String firstName;
 
-    @NotBlank(message = "Фамилия обязательна для заполнения")
+    @NotBlank(message = "Фамилия обязательна")
     private String lastName;
 
-    @NotBlank(message = "Email обязателен для заполнения")
-    @Email(message = "Некорректный формат email")
+    @NotBlank(message = "Email обязателен")
+    @Email(message = "Некорректный email")
     private String email;
 
-    @Size(max = 20, message = "Номер телефона не должен превышать 20 символов")
+    @Size(max = 20)
     private String phone;
 
+    private List<OrderDto> orders;
 }
