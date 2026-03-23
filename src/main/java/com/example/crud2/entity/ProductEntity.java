@@ -6,33 +6,31 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "products")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClientEntity {
+public class ProductEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "firstname", nullable = false, length = 255)
-    private String firstName;
+    @Column(nullable = false, unique = true, length = 255)
+    private String name;
 
-    @Column(name = "lastname", nullable = false, length = 255)
-    private String lastName;
+    @Column(length = 1000)
+    private String description;
 
-    @Column(nullable = false, unique = true, length = 255, updatable = false)
-    private String email;
-
-    @Column(length = 20)
-    private String phone;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -40,9 +38,9 @@ public class ClientEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<OrderEntity> orders = new ArrayList<>();
+    private List<OrderItemEntity> orderItems = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

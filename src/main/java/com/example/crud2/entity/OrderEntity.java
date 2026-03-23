@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -31,8 +33,47 @@ public class OrderEntity {
     @JoinColumn(name = "client_id")
     private ClientEntity client;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<OrderItemEntity> orderItems = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+    }
+    public void addOrderItem(OrderItemEntity orderItem) {
+        if (orderItem == null) {
+            return;
+        }
+        orderItems.add(orderItem);
+        orderItem.setOrder(this);
+    }
+
+    public void removeOrderItem(OrderItemEntity orderItem) {
+        if (orderItem == null) {
+            return;
+        }
+        orderItems.remove(orderItem);
+        orderItem.setOrder(null);
+    }
+
+    public OrderItemEntity getOrderItemByProductId(Long productId) {
+        if (productId == null) {
+            return null;
+        }
+        return orderItems.stream()
+                .filter(item -> item.getProduct() != null && productId.equals(item.getProduct().getId()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public boolean hasProduct(Long productId) {
+        return getOrderItemByProductId(productId) != null;
+    }
+
+    public int getTotalItemsCount() {
+        return orderItems.stream()
+                .mapToInt(OrderItemEntity::getQuantity)
+                .sum();
     }
 }

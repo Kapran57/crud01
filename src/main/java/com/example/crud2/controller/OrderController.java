@@ -1,6 +1,5 @@
-package com.example.crud2.controller;
-
 import com.example.crud2.dto.OrderDto;
+import com.example.crud2.dto.OrderItemDto;
 import com.example.crud2.entity.OrderStatus;
 import com.example.crud2.service.OrderService;
 import jakarta.validation.Valid;
@@ -12,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -53,13 +53,14 @@ public class OrderController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) Long productId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection) {
 
         Page<OrderDto> orders = orderService.getAllOrders(
-                status, startDate, endDate, page, size, sortBy, sortDirection);
+                status, startDate, endDate, productId, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(orders);
     }
 
@@ -71,5 +72,36 @@ public class OrderController {
 
         Page<OrderDto> orders = orderService.getOrdersByClientId(clientId, page, size);
         return ResponseEntity.ok(orders);
+    }
+
+    @PostMapping("/{orderId}/items")
+    public ResponseEntity<OrderDto> addItemsToOrder(
+            @PathVariable Long orderId,
+            @Valid @RequestBody List<OrderItemDto> items) {
+        OrderDto updatedOrder = orderService.addItemsToOrder(orderId, items);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+    @PutMapping("/{orderId}/items/{productId}")
+    public ResponseEntity<OrderDto> updateOrderItemQuantity(
+            @PathVariable Long orderId,
+            @PathVariable Long productId,
+            @RequestParam Integer quantity) {
+        OrderDto updatedOrder = orderService.updateOrderItemQuantity(orderId, productId, quantity);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+    @DeleteMapping("/{orderId}/items/{productId}")
+    public ResponseEntity<OrderDto> removeItemFromOrder(
+            @PathVariable Long orderId,
+            @PathVariable Long productId) {
+        OrderDto updatedOrder = orderService.removeItemFromOrder(orderId, productId);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+    @GetMapping("/{orderId}/items")
+    public ResponseEntity<List<OrderItemDto>> getOrderItems(@PathVariable Long orderId) {
+        List<OrderItemDto> items = orderService.getOrderItems(orderId);
+        return ResponseEntity.ok(items);
     }
 }

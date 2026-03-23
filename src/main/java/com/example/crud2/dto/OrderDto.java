@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -20,4 +22,7 @@ public class OrderDto {
 
     private ClientDto client;
     private Long clientId;
+
+    @Builder.Default
+    private List<OrderItemDto> items = new ArrayList<>();
 }
