@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -30,6 +31,9 @@ public class ClientDto {
 
     @Size(max = 20)
     private String phone;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     private List<OrderDto> orders;
 }

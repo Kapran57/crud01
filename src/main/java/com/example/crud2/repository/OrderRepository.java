@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
+    Page<OrderEntity> findByStatus(OrderStatus status, Pageable pageable);
+
     Page<OrderEntity> findByClientId(Long clientId, Pageable pageable);
 
     Page<OrderEntity> findByOrderItemsProductId(Long productId, Pageable pageable);

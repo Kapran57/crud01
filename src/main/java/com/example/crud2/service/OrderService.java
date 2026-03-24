@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,22 +101,17 @@ public class OrderService {
             String sortBy,
             String sortDirection) {
 
-        log.info("Fetching all orders with filters - status: {}, startDate: {}, endDate: {}, productId: {}, sortBy: {}, sortDirection: {}",
-                status, startDate, endDate, productId, sortBy, sortDirection);
+        log.info("Fetching all orders with filters - status: {}, sortBy: {}, sortDirection: {}",
+                status, sortBy, sortDirection);
 
-        Pageable pageable = PageRequest.of(page, size);
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
         Page<OrderEntity> ordersPage;
-
-        if ("totalItems".equals(sortBy)) {
-            if ("ASC".equalsIgnoreCase(sortDirection)) {
-                ordersPage = orderRepository.findAllSortedByTotalItemsAsc(pageable);
-            } else {
-                ordersPage = orderRepository.findAllSortedByTotalItemsDesc(pageable);
-            }
+        if (status != null) {
+            ordersPage = orderRepository.findByStatus(status, pageable);
         } else {
-            Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
-            pageable = PageRequest.of(page, size, sort);
-            ordersPage = orderRepository.findByFilters(status, startDate, endDate, productId, pageable);
+            ordersPage = orderRepository.findAll(pageable);
         }
 
         return ordersPage.map(orderMapper::toDto);
@@ -138,6 +134,11 @@ public class OrderService {
             dto.setClientId(clientId);
             return dto;
         });
+    }
+
+    public List<OrderDto> getAllOrdersSimple() {
+        log.info("Getting all orders");
+        return new ArrayList<>();
     }
 
     @Transactional
