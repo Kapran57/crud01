@@ -9,15 +9,9 @@ import com.example.crud2.exception.*;
 import com.example.crud2.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +29,7 @@ public class OrderService {
 
     @Transactional
     public OrderDto createOrder(OrderDto orderDto) {
-        log.info("Creating new order for client id: {}", orderDto.getClientId());
+        log.info("Создание нового заказа для клиента id: {}", orderDto.getClientId());
 
         ClientEntity client = clientRepository.findById(orderDto.getClientId())
                 .orElseThrow(() -> new ClientNotFoundException(orderDto.getClientId()));
@@ -46,13 +40,13 @@ public class OrderService {
 
         OrderEntity savedEntity = orderRepository.save(entity);
 
-        log.info("Order created with id: {}", savedEntity.getId());
+        log.info("Заказ созданный с помощью id: {}", savedEntity.getId());
         return orderMapper.toDto(savedEntity);
     }
 
     @Transactional(readOnly = true)
     public OrderDto getOrderById(Long id) {
-        log.info("Fetching order with id: {}", id);
+        log.info("Получение заказа с помощью id: {}", id);
 
         OrderEntity entity = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
@@ -61,89 +55,26 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderDto updateOrderStatus(Long id, OrderStatus status) {
-        log.info("Updating order status for order id: {} to {}", id, status);
-
-        OrderEntity entity = orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException(id));
-
-        if (entity.getStatus() == OrderStatus.COMPLETED) {
-            throw new InvalidOrderStatusException(entity.getStatus(), status);
-        }
-
-        entity.setStatus(status);
-        OrderEntity updatedEntity = orderRepository.save(entity);
-
-        log.info("Order status updated for order id: {}", id);
-        return orderMapper.toDto(updatedEntity);
-    }
-
-    @Transactional
     public void deleteOrder(Long id) {
-        log.info("Deleting order with id: {}", id);
+        log.info("Удаление заказа с помощью id: {}", id);
 
         if (!orderRepository.existsById(id)) {
             throw new OrderNotFoundException(id);
         }
 
         orderRepository.deleteById(id);
-        log.info("Order deleted with id: {}", id);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<OrderDto> getAllOrders(
-            OrderStatus status,
-            LocalDateTime startDate,
-            LocalDateTime endDate,
-            Long productId,
-            int page,
-            int size,
-            String sortBy,
-            String sortDirection) {
-
-        log.info("Fetching all orders with filters - status: {}, sortBy: {}, sortDirection: {}",
-                status, sortBy, sortDirection);
-
-        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Page<OrderEntity> ordersPage;
-        if (status != null) {
-            ordersPage = orderRepository.findByStatus(status, pageable);
-        } else {
-            ordersPage = orderRepository.findAll(pageable);
-        }
-
-        return ordersPage.map(orderMapper::toDto);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<OrderDto> getOrdersByClientId(Long clientId, int page, int size) {
-        log.info("Fetching orders for client id: {}", clientId);
-
-        if (!clientRepository.existsById(clientId)) {
-            throw new ClientNotFoundException(clientId);
-        }
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-
-        Page<OrderEntity> ordersPage = orderRepository.findByClientId(clientId, pageable);
-
-        return ordersPage.map(order -> {
-            OrderDto dto = orderMapper.toDto(order);
-            dto.setClientId(clientId);
-            return dto;
-        });
+        log.info("Заказ удален с помощью id: {}", id);
     }
 
     public List<OrderDto> getAllOrdersSimple() {
-        log.info("Getting all orders");
-        return new ArrayList<>();
+        log.info("Получение всех заказов");
+        List<OrderEntity> orders = orderRepository.findAll();
+        return orderMapper.toDtoList(orders);
     }
 
     @Transactional
     public OrderDto addItemsToOrder(Long orderId, List<OrderItemDto> itemsDto) {
-        log.info("Adding items to order with id: {}", orderId);
+        log.info("Добавление товаров в заказ с помощью id: {}", orderId);
 
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
@@ -167,7 +98,7 @@ public class OrderService {
 
             if (existingItem != null) {
                 existingItem.setQuantity(existingItem.getQuantity() + itemDto.getQuantity());
-                log.debug("Updated quantity for product {} in order {} to {}",
+                log.debug("Количество продукта {} в заказе {} на {}",
                         product.getId(), orderId, existingItem.getQuantity());
             } else {
                 OrderItemEntity newItem = OrderItemEntity.builder()
@@ -176,72 +107,20 @@ public class OrderService {
                         .order(order)
                         .build();
                 order.addOrderItem(newItem);
-                log.debug("Added new product {} to order {} with quantity {}",
+                log.debug("Добавлен новый товар {} в заказ {} с указанием количества {}",
                         product.getId(), orderId, itemDto.getQuantity());
             }
         }
 
         OrderEntity savedOrder = orderRepository.save(order);
 
-        log.info("Successfully added {} items to order {}", itemsDto.size(), orderId);
-        return orderMapper.toDto(savedOrder);
-    }
-
-    @Transactional
-    public OrderDto updateOrderItemQuantity(Long orderId, Long productId, Integer quantity) {
-        log.info("Updating item quantity in order {} for product {} to {}", orderId, productId, quantity);
-
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Количество должно быть положительным");
-        }
-
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException(orderId));
-
-        if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.CANCELED) {
-            throw new InvalidOrderStatusException(order.getStatus(), null);
-        }
-
-        OrderItemEntity orderItem = order.getOrderItems().stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
-                .findFirst()
-                .orElseThrow(() -> new OrderItemNotFoundException(orderId, productId));
-
-        orderItem.setQuantity(quantity);
-
-        OrderEntity savedOrder = orderRepository.save(order);
-
-        log.info("Updated quantity for product {} in order {} to {}", productId, orderId, quantity);
-        return orderMapper.toDto(savedOrder);
-    }
-
-    @Transactional
-    public OrderDto removeItemFromOrder(Long orderId, Long productId) {
-        log.info("Removing item from order {} for product {}", orderId, productId);
-
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException(orderId));
-
-        if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.CANCELED) {
-            throw new InvalidOrderStatusException(order.getStatus(), null);
-        }
-
-        OrderItemEntity orderItem = order.getOrderItems().stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
-                .findFirst()
-                .orElseThrow(() -> new OrderItemNotFoundException(orderId, productId));
-
-        order.removeOrderItem(orderItem);
-
-        OrderEntity savedOrder = orderRepository.save(order);
-
-        log.info("Removed product {} from order {}", productId, orderId);
+        log.info("Успешно добавлены {} товары в заказ {}", itemsDto.size(), orderId);
         return orderMapper.toDto(savedOrder);
     }
 
     @Transactional(readOnly = true)
     public List<OrderItemDto> getOrderItems(Long orderId) {
-        log.info("Getting items for order: {}", orderId);
+        log.info("Получение товаров для заказа: {}", orderId);
 
         if (!orderRepository.existsById(orderId)) {
             throw new OrderNotFoundException(orderId);
@@ -252,16 +131,5 @@ public class OrderService {
         return items.stream()
                 .map(orderItemMapper::toDto)
                 .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getOrderTotalItems(Long orderId) {
-        log.info("Getting total items count for order: {}", orderId);
-
-        if (!orderRepository.existsById(orderId)) {
-            throw new OrderNotFoundException(orderId);
-        }
-
-        return orderItemRepository.getTotalItemsByOrderId(orderId);
     }
 }

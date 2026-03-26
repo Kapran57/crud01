@@ -28,7 +28,7 @@ public class ClientEntity {
     @Column(name = "lastname", nullable = false, length = 255)
     private String lastName;
 
-    @Column(nullable = false, unique = true, length = 255, updatable = false)
+    @Column(nullable = false, unique = true, length = 255)
     private String email;
 
     @Column(length = 20)

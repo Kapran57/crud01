@@ -6,7 +6,5 @@ public class ClientNotFoundException extends RuntimeException {
         super(String.format("Пользователь с id %d не найден", id));
     }
 
-    public ClientNotFoundException(String email) {
-        super(String.format("Пользователь с email %s не найден", email));
-    }
+
 }

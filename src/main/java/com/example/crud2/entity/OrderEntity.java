@@ -48,32 +48,4 @@ public class OrderEntity {
         orderItems.add(orderItem);
         orderItem.setOrder(this);
     }
-
-    public void removeOrderItem(OrderItemEntity orderItem) {
-        if (orderItem == null) {
-            return;
-        }
-        orderItems.remove(orderItem);
-        orderItem.setOrder(null);
-    }
-
-    public OrderItemEntity getOrderItemByProductId(Long productId) {
-        if (productId == null) {
-            return null;
-        }
-        return orderItems.stream()
-                .filter(item -> item.getProduct() != null && productId.equals(item.getProduct().getId()))
-                .findFirst()
-                .orElse(null);
-    }
-
-    public boolean hasProduct(Long productId) {
-        return getOrderItemByProductId(productId) != null;
-    }
-
-    public int getTotalItemsCount() {
-        return orderItems.stream()
-                .mapToInt(OrderItemEntity::getQuantity)
-                .sum();
-    }
 }

@@ -8,13 +8,12 @@ import com.example.crud2.entity.OrderEntity;
 import com.example.crud2.entity.OrderItemEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {OrderItemMapper.class, ClientMapper.class})
+@Mapper(componentModel = "spring", uses = {OrderItemMapper.class})
 public interface OrderMapper {
 
     @Mapping(target = "client", source = "client", qualifiedByName = "mapClientToDto")
@@ -29,13 +28,6 @@ public interface OrderMapper {
     @Mapping(target = "status", source = "status")
     OrderEntity toEntity(OrderDto dto);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "client", ignore = true)
-    @Mapping(target = "orderItems", ignore = true)
-    @Mapping(target = "status", source = "status")
-    void updateEntity(@MappingTarget OrderEntity entity, OrderDto dto);
-
     @Named("mapOrderItemsToDto")
     default List<OrderItemDto> mapOrderItemsToDto(List<OrderItemEntity> orderItems) {
         if (orderItems == null) return null;
@@ -43,6 +35,7 @@ public interface OrderMapper {
                 .map(this::mapOrderItemToDto)
                 .collect(Collectors.toList());
     }
+    List<OrderDto> toDtoList(List<OrderEntity> entities);
 
     default OrderItemDto mapOrderItemToDto(OrderItemEntity orderItem) {
         if (orderItem == null) return null;

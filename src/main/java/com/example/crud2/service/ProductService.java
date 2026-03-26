@@ -30,19 +30,28 @@ public class ProductService {
 
     @Transactional
     public ProductDto createProduct(ProductDto productDto) {
+        log.info("Создание товара: name={}, price={}", productDto.getName(), productDto.getPrice());
 
-        if (productRepository.existsByName(productDto.getName())) {
-            throw new DuplicateProductNameException(productDto.getName());
+        try {
+            if (productRepository.existsByName(productDto.getName())) {
+                log.warn("Товар с таким названием уже существует: {}", productDto.getName());
+                throw new DuplicateProductNameException(productDto.getName());
+            }
+
+            ProductEntity entity = productMapper.toEntity(productDto);
+            ProductEntity savedEntity = productRepository.save(entity);
+
+            log.info("Товар создан: id={}, name={}, price={}",
+                    savedEntity.getId(), savedEntity.getName(), savedEntity.getPrice());
+            return productMapper.toDto(savedEntity);
+
+        } catch (DuplicateProductNameException e) {
+            log.error("Ошибка создания товара: название уже существует", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Непредвиденная ошибка при создании товара: name={}", productDto.getName(), e);
+            throw e;
         }
-
-
-        ProductEntity entity = productMapper.toEntity(productDto);
-
-
-        ProductEntity savedEntity = productRepository.save(entity);
-
-        log.info("Product created with id: {}", savedEntity.getId());
-        return productMapper.toDto(savedEntity);
     }
 
     @Transactional(readOnly = true)
@@ -77,19 +86,31 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(Long id) {
-        log.info("Deleting product with id: {}", id);
+        log.info("Удаление товара: id={}", id);
 
-        if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException(id);
+        try {
+            if (!productRepository.existsById(id)) {
+                log.warn("Товар не найден для удаления: id={}", id);
+                throw new ProductNotFoundException(id);
+            }
+
+            if (orderItemRepository.existsByProductId(id)) {
+                log.warn("Попытка удалить товар, который используется в заказах: id={}", id);
+                throw new ProductDeletionException(id);
+            }
+
+            productRepository.deleteById(id);
+            log.info("Товар удален: id={}", id);
+
+        } catch (ProductNotFoundException | ProductDeletionException e) {
+            log.error("Ошибка удаления товара: id={}", id, e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Непредвиденная ошибка при удалении товара: id={}", id, e);
+            throw e;
         }
-
-        if (orderItemRepository.existsByProductId(id)) {
-            throw new ProductDeletionException(id);
-        }
-
-        productRepository.deleteById(id);
-        log.info("Product deleted with id: {}", id);
     }
+
 
     @Transactional(readOnly = true)
     public Page<ProductDto> getAllProducts(
@@ -100,6 +121,10 @@ public class ProductService {
             int size,
             String sortBy,
             String sortDirection) {
+
+        if (name != null && name.isBlank()) {
+            name = null;
+        }
 
         log.info("Fetching all products with filters - name: {}, minPrice: {}, maxPrice: {}, page: {}, size: {}",
                 name, minPrice, maxPrice, page, size);
