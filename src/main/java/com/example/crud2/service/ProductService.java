@@ -56,7 +56,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductDto getProductById(Long id) {
-        log.info("Fetching product with id: {}", id);
+        log.info("Получение продукта по id: {}", id);
 
         ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
@@ -66,7 +66,7 @@ public class ProductService {
 
     @Transactional
     public ProductDto updateProduct(Long id, ProductDto productDto) {
-        log.info("Updating product with id: {}", id);
+        log.info("Продукт обновлен по id: {}", id);
 
         ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
@@ -80,7 +80,7 @@ public class ProductService {
 
         ProductEntity updatedEntity = productRepository.save(entity);
 
-        log.info("Product updated with id: {}", updatedEntity.getId());
+        log.info("Продукт обновлен по id: {}", updatedEntity.getId());
         return productMapper.toDto(updatedEntity);
     }
 
@@ -126,7 +126,7 @@ public class ProductService {
             name = null;
         }
 
-        log.info("Fetching all products with filters - name: {}, minPrice: {}, maxPrice: {}, page: {}, size: {}",
+        log.info("Выборка всех продуктов с помощью фильтров - name: {}, minPrice: {}, maxPrice: {}, page: {}, size: {}",
                 name, minPrice, maxPrice, page, size);
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
